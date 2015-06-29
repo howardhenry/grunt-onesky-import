@@ -35,6 +35,8 @@ grunt.initConfig({
 });
 ```
 
+IMPORTANT: Your translation file should include translation strings in the base language set up in your OneSky project.
+
 ### Options
 
 #### options.authFile
@@ -65,12 +67,6 @@ Default value: `HIERARCHICAL_JSON`
 
 The file format for OneSky to assume when importing translations. See list of available [file formats](https://github.com/onesky/api-documentation-platform/blob/master/reference/format.md).
 
-#### options.locale (optional)
-Type: `String`
-
-The specific translation language you wish to import. If unset, the your OneSky project's base locale will be assumed.
-<p>**NOTE:** Upload will still succeed if the specified locale is not included in your project. However, the file will not be imported in your translations.</p> 
-
 #### options.isKeepingAllStrings (optional)
 Type: `String`
 Default value: `true`
@@ -90,8 +86,7 @@ grunt.initConfig({
         import: {
             options: {
                 file: 'media.json',
-                fileFormat: 'HIERARCHICAL_JSON',
-                locale: 'en'
+                fileFormat: 'HIERARCHICAL_JSON'
             }
         }
     },

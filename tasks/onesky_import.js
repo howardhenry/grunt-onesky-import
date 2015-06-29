@@ -25,8 +25,7 @@ module.exports = function (grunt) {
             projectId: '',
             file: '',
             fileFormat: 'HIERARCHICAL_JSON',
-            isKeepingAllStrings: true,
-            locale: ''
+            isKeepingAllStrings: true
         });
 
         return upload();
@@ -49,10 +48,6 @@ module.exports = function (grunt) {
                 form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
             } else {
                 grunt.fail.warn('Expected "options.isKeeping" to be a boolean');
-            }
-
-            if (options.locale) {
-                form.append('locale', options.locale);
             }
 
             form.submit(url, onUpload);
