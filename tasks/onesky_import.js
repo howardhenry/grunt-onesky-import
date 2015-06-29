@@ -16,7 +16,7 @@ var FormData = require('form-data');
 var apiRoot = 'https://platform.api.onesky.io/1/';
 
 module.exports = function (grunt) {
-    grunt.registerMultiTask('oneskyExport', 'Import translation files into your OneSky project', function () {
+    grunt.registerMultiTask('oneskyImport', 'Import translation files into your OneSky project', function () {
 
         var done = this.async();
 
