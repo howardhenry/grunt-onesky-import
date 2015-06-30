@@ -22,20 +22,10 @@ grunt.loadNpmTasks('grunt-onesky-import');
 ### Overview
 In your project's Gruntfile, add a section named `oneskyImport` to the data object passed into `grunt.initConfig()`.
 
-```js
-grunt.initConfig({
-    oneskyImport: {
-        options: {
-            // Task-specific options go here.
-        },
-        your_target: {
-            // Target-specific or options go here.
-        },
-    },
-});
-```
+IMPORTANT:
 
-IMPORTANT: Your translation file should include translation strings in the base language set up in your OneSky project.
+* Your translation file should include translation strings in the base language set up in your OneSky project.
+* After a successful upload, translations strings may not be immediately available in your project as they are automatically queued to be imported. This process can take a few seconds/minutes dependent on server load.
 
 ### Options
 
@@ -63,7 +53,6 @@ The path to the translation file to be upload to your OneSky project.
 
 #### options.fileFormat
 Type: `String`
-Default value: `HIERARCHICAL_JSON`
 
 The file format for OneSky to assume when importing translations. See list of available [file formats](https://github.com/onesky/api-documentation-platform/blob/master/reference/format.md).
 
