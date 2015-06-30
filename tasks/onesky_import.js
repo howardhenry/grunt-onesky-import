@@ -47,50 +47,48 @@ module.exports = function (grunt) {
             if (_.isBoolean(options.isKeepingAllStrings)) {
                 form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
             } else {
-                grunt.fail.warn('Expected "options.isKeeping" to be a boolean');
+                grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
             }
 
             form.submit(url, onUpload);
-        }
+
+            function onUpload(error, response) {
+                if (error) { throw error; }
+
+                response.on('data', function (data) {
+                    data = JSON.parse(data);
+
+                    if (response.statusCode === 201) {
+                        onUploadSuccess(data);
+                    } else {
+                        onUploadError(data);
+                    }
+                });
+
+                response.resume();
+                done();
+            }
+
+            function onUploadSuccess(data) {
+                var importId;
+                var locale;
+
+                if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
+                if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
+
+                grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
+            }
 
 
-        function onUpload(error, response) {
-            if (error) { throw error; }
+            function onUploadError(data) {
+                var errorMsg;
+                var statusCode;
 
-            response.on('data', function (data) {
-                data = JSON.parse(data);
+                if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
+                if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
 
-                if (response.statusCode === 201) {
-                    onUploadSuccess(data);
-                } else {
-                    onUploadError(data);
-                }
-            });
-
-            response.resume();
-            done();
-        }
-
-
-        function onUploadSuccess(data) {
-            var importId;
-            var locale;
-
-            if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
-            if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
-
-            grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
-        }
-
-
-        function onUploadError(data) {
-            var errorMsg;
-            var statusCode;
-
-            if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
-            if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
-
-            grunt.fail.warn(statusCode + ': ' + errorMsg);
+                grunt.fail.warn(statusCode + ': ' + errorMsg);
+            }
         }
 
 
