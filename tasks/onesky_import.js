@@ -20,20 +20,36 @@ module.exports = function (grunt) {
 
         var done = this.async();
 
+        var queue = [];
+
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
             file: '',
+            files: [],
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
 
-        return upload();
+        queue = queue.concat(grunt.file.expand(options.files));
+
+        if (options.file) {
+            queue.push(options.file);
+        }
+
+        next();
 
         ///////////////////////////
 
+        function next() {
+            if (queue.length) {
+                upload(queue.shift());
+            }else {
+                done();
+            }
+        }
 
-        function upload() {
+        function upload(file) {
             var api = getApi();
             var url = api.baseUrl + api.path;
 
@@ -41,7 +57,7 @@ module.exports = function (grunt) {
             form.append('api_key', api.publicKey);
             form.append('timestamp', api.timestamp);
             form.append('dev_hash', api.devHash);
-            form.append('file', fs.createReadStream(options.file));
+            form.append('file', fs.createReadStream(file));
             form.append('file_format', options.fileFormat);
 
             if (_.isBoolean(options.isKeepingAllStrings)) {
@@ -66,7 +82,8 @@ module.exports = function (grunt) {
                 });
 
                 response.resume();
-                done();
+
+                next();
             }
 
             function onUploadSuccess(data) {
@@ -76,7 +93,7 @@ module.exports = function (grunt) {
                 if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
                 if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
 
-                grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
+                grunt.log.ok('File: "' + file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
             }
 
 
