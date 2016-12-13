@@ -1,0 +1,20 @@
+# Contributing Guide
+
+When submitting issues on GitHub, please include as much detail as possible to make debugging quick and easy.
+
+- Good - Your versions of Grunt, grunt-onesky-import, Node.js, etc, relevant console logs/error, code examples that revealed the issue
+- Better - A Pull Request that fixes the issue, including test coverage for the issue and the fix
+
+[Github Issues](https://github.com/howardhenry/grunt-onesky-import/issues).
+
+#### Submitting Pull Requests
+
+1. Contribute to the issue/discussion that is the reason you'll be developing in the first place
+1. Fork grunt-onesky-import
+1. `git clone git@github.com:<you>/grunt-onesky-import.git`
+1. `cd grunt-onesky-import; npm install;`
+1. Write your code, including relevant documentation and tests
+1. Run `npm test`
+1. The tests will be run
+1. Submit your PR and we'll review!
+1. Thanks!
