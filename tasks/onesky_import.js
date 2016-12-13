@@ -31,23 +31,23 @@ module.exports = function (grunt) {
             isKeepingAllStrings: true
         });
 
-		queue = queue.concat(grunt.file.expand(options.files));
+        queue = queue.concat(grunt.file.expand(options.files));
 
-		if (options.file) {
-			queue.push(options.file);
-		}
+        if (options.file) {
+            queue.push(options.file);
+        }
 
-		next();
+        next();
 
         ///////////////////////////
 
-		function next() {
-			if (queue.length) {
-				upload(queue.shift());
-			}else {
-				done();
-			}
-		}
+        function next() {
+            if (queue.length) {
+                upload(queue.shift());
+            }else {
+                done();
+            }
+        }
 
         function upload(file) {
             var api = getApi();
