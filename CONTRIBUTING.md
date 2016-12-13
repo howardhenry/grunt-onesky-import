@@ -14,7 +14,7 @@ When submitting issues on GitHub, please include as much detail as possible to m
 1. `git clone git@github.com:<you>/grunt-onesky-import.git`
 1. `cd grunt-onesky-import; npm install;`
 1. Write your code, including relevant documentation and tests
-1. Run `npm test`
-1. The tests will be run
+1. Run `npm test`. The tests will be run
+1. Run `npm run eslint`. Code will be linted
 1. Submit your PR and we'll review!
 1. Thanks!

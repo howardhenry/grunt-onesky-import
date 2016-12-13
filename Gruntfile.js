@@ -9,9 +9,16 @@
 'use strict';
 
 module.exports = function (grunt) {
+    // Loads relevant npm grunt tasks automatically
+    require('load-grunt-tasks')(grunt);
 
     // Project configuration.
     grunt.initConfig({
+        mocha: {
+            test: {
+                src: ['tests/**/*.spec.js']
+            }
+        },
         eslint: {
             options: {
                 configFile: '.eslintrc'
@@ -23,13 +30,11 @@ module.exports = function (grunt) {
                 '!test/**/*.js'
             ]
         }
-
     });
 
     grunt.loadTasks('tasks');
 
-    grunt.loadNpmTasks('grunt-eslint');
-
     grunt.registerTask('default', ['eslint']);
+    grunt.registerTask('test', ['mocha']);
 
 };
