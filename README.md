@@ -51,6 +51,11 @@ Type: `String`
 
 The path to the translation file to be upload to your OneSky project.
 
+#### options.files
+Type: `String` | `Array`
+
+The pattern to the translation files to be upload to your OneSky project.
+
 #### options.fileFormat
 Type: `String`
 
@@ -74,7 +79,7 @@ grunt.initConfig({
         },
         import: {
             options: {
-                file: 'media.json',
+                files: 'lang/**/*.json',
                 fileFormat: 'HIERARCHICAL_JSON'
             }
         }
