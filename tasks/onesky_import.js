@@ -6,8 +6,6 @@
  * Licensed under the MIT license.
  */
 
-'use strict';
-
 var crypto = require('crypto');
 var fs = require('fs');
 var _ = require('lodash');
@@ -31,7 +29,6 @@ module.exports = function (grunt) {
         return upload();
 
         ///////////////////////////
-
 
         function upload() {
             var api = getApi();
@@ -79,7 +76,6 @@ module.exports = function (grunt) {
                 grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
             }
 
-
             function onUploadError(data) {
                 var errorMsg;
                 var statusCode;
@@ -90,7 +86,6 @@ module.exports = function (grunt) {
                 grunt.fail.warn(statusCode + ': ' + errorMsg);
             }
         }
-
 
         function getApi() {
             var oneSkyKeys = grunt.file.readJSON(options.authFile);
