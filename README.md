@@ -51,6 +51,11 @@ Type: `String`
 
 The path to the translation file to be upload to your OneSky project.
 
+#### options.language
+Type: `String` Default value: Your project main language
+
+The language (and region if specified) of your file. For example, you will use `en-GB` if you want to upload a file in english especially for Great Britain.
+
 #### options.fileFormat
 Type: `String`
 

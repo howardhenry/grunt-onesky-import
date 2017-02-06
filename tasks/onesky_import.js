@@ -21,6 +21,7 @@ module.exports = function (grunt) {
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
+            language:'',
             file: '',
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
@@ -40,6 +41,7 @@ module.exports = function (grunt) {
             form.append('dev_hash', api.devHash);
             form.append('file', fs.createReadStream(options.file));
             form.append('file_format', options.fileFormat);
+            form.append('locale', options.language);
 
             if (_.isBoolean(options.isKeepingAllStrings)) {
                 form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
@@ -72,8 +74,9 @@ module.exports = function (grunt) {
 
                 if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
                 if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
+                if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
 
-                grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale);
+                grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
             }
 
             function onUploadError(data) {
