@@ -79,6 +79,7 @@ grunt.initConfig({
         },
         import: {
             options: {
+                language: 'en-GB',
                 file: 'media.json',
                 fileFormat: 'HIERARCHICAL_JSON'
             }
