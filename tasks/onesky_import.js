@@ -21,7 +21,7 @@ module.exports = function (grunt) {
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
-            language:'',
+            language: '',
             file: '',
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
@@ -71,12 +71,13 @@ module.exports = function (grunt) {
             function onUploadSuccess(data) {
                 var importId;
                 var locale;
+                var region;
 
                 if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
                 if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
                 if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
-
-                grunt.log.ok('File: "' + options.file + '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
+                grunt.log.ok('File: "' + options.file +
+                    '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
             }
 
             function onUploadError(data) {
