@@ -21,7 +21,7 @@ module.exports = function (grunt) {
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
-            language: '',
+            locale: '',
             file: '',
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
@@ -41,7 +41,7 @@ module.exports = function (grunt) {
             form.append('dev_hash', api.devHash);
             form.append('file', fs.createReadStream(options.file));
             form.append('file_format', options.fileFormat);
-            form.append('locale', options.language);
+            form.append('locale', options.locale);
 
             if (_.isBoolean(options.isKeepingAllStrings)) {
                 form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
