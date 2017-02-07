@@ -18,68 +18,69 @@ module.exports = function (grunt) {
 
         var done = this.async();
 
-        var queue = [];
+        var uploadFiles = [];
 
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
             locale: '',
             file: '',
-            files:[], // [[projectId:String, language:String, file:String], [...]]
+            files: [],
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
 
-        //return upload();
-        if (files){
-            for(var i=0; i<files.lenght ; i++){
-                queue = files[i];
-                upload(queue[0],queue[2],queue[3]);
-            }
-        }else{
-            upload(options.projectId, options.languague, options.file);
+        if (!!options.files.lenght){
+            options.files.push({projectId : options.projectId, locale : options.locale, file : options.file})
         }
+
+        uploadFiles = options.files.map(function(element) {
+             return upload(element);
+        });
         
-
-
+        Promise.all(uploadFiles).then(function() {
+            console.log('Files uploaded on onesky');
+            done();
+        });
 
         ///////////////////////////
 
-        function upload(projectId, language, file) {
-            var api = getApi(projectId);
+        function upload(element) {
+            var api = getApi(element.projectId);
             var url = api.baseUrl + api.path;
+            var _promise = new Promise(function(resolve, reject) {
+                var form = new FormData();
+                form.append('api_key', api.publicKey);
+                form.append('timestamp', api.timestamp);
+                form.append('dev_hash', api.devHash);
+                form.append('file', fs.createReadStream(element.file));
+                form.append('file_format', options.fileFormat);
+                form.append('locale', element.locale);
 
-            var form = new FormData();
-            form.append('api_key', api.publicKey);
-            form.append('timestamp', api.timestamp);
-            form.append('dev_hash', api.devHash);
-            form.append('file', fs.createReadStream(file));
-            form.append('file_format', options.fileFormat);
-            form.append('locale', language);
+                if (_.isBoolean(options.isKeepingAllStrings)) {
+                    form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
+                } else {
+                    grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
+                }
 
-            if (_.isBoolean(options.isKeepingAllStrings)) {
-                form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
-            } else {
-                grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
+                form.submit(url, onUpload);
             }
-
-            form.submit(url, onUpload);
 
             function onUpload(error, response) {
                 if (error) { throw error; }
 
-                response.on('data', function (data) {
-                    data = JSON.parse(data);
+                var promise = new Promise(function(resolve, reject) {
+                    response.on('data', function (data) {
+                        data = JSON.parse(data);
 
-                    if (response.statusCode === 201) {
-                        onUploadSuccess(data);
-                    } else {
-                        onUploadError(data);
-                    }
+                        if (response.statusCode === 201) {
+                            onUploadSuccess(data);
+                        } else {
+                            onUploadError(data);
+                        }
+                    }) 
                 });
-
                 response.resume();
-                done();
             }
 
             function onUploadSuccess(data) {
@@ -92,6 +93,7 @@ module.exports = function (grunt) {
                 if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
                 grunt.log.ok('File: "' + options.file +
                     '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
+                resolve();    
             }
 
             function onUploadError(data) {
@@ -100,9 +102,13 @@ module.exports = function (grunt) {
 
                 if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
                 if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
-
-                grunt.fail.warn(statusCode + ': ' + errorMsg);
+                grunt.fail.warn(statusCode + ': ' + errorMsg)
+                reject();
             }
+
+            });
+
+            return _promise;
         }
 
         function getApi(projectId) {
