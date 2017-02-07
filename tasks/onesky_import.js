@@ -18,30 +18,44 @@ module.exports = function (grunt) {
 
         var done = this.async();
 
+        var queue = [];
+
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
             locale: '',
             file: '',
+            files:[], // [[projectId:String, language:String, file:String], [...]]
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
 
-        return upload();
+        //return upload();
+        if (files){
+            for(var i=0; i<files.lenght ; i++){
+                queue = files[i];
+                upload(queue[0],queue[2],queue[3]);
+            }
+        }else{
+            upload(options.projectId, options.languague, options.file);
+        }
+        
+
+
 
         ///////////////////////////
 
-        function upload() {
-            var api = getApi();
+        function upload(projectId, language, file) {
+            var api = getApi(projectId);
             var url = api.baseUrl + api.path;
 
             var form = new FormData();
             form.append('api_key', api.publicKey);
             form.append('timestamp', api.timestamp);
             form.append('dev_hash', api.devHash);
-            form.append('file', fs.createReadStream(options.file));
+            form.append('file', fs.createReadStream(file));
             form.append('file_format', options.fileFormat);
-            form.append('locale', options.locale);
+            form.append('locale', language);
 
             if (_.isBoolean(options.isKeepingAllStrings)) {
                 form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
@@ -91,7 +105,7 @@ module.exports = function (grunt) {
             }
         }
 
-        function getApi() {
+        function getApi(projectId) {
             var oneSkyKeys = grunt.file.readJSON(options.authFile);
 
             var timestamp = Math.floor(Date.now() / 1000);
@@ -99,7 +113,7 @@ module.exports = function (grunt) {
 
             return {
                 baseUrl: apiRoot,
-                path: 'projects/' + options.projectId + '/files',
+                path: 'projects/' + projectId + '/files',
                 publicKey: oneSkyKeys.publicKey,
                 timestamp: timestamp,
                 devHash: devHash
