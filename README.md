@@ -51,6 +51,17 @@ Type: `String`
 
 The path to the translation file to be upload to your OneSky project.
 
+#### options.files
+Type: `Array of Object`
+
+```
+[{
+    ProjectId : String, locale : 'String', file : 'String'
+}, {...}]
+```
+
+This list enable you to upload multiple file at a time. Note that you don't need to enter a value for the ProjectId, the locale or the file if you use the Array files. If you do use both at the same time the value you enter for the ProjectId, the locale and the file will add as an additionnal object of the Array files.
+
 #### options.locale
 Type: `String` Default value: Your project main language
 
@@ -69,6 +80,7 @@ When uploading a file which overwrites an existing file in your OneSky project, 
 
 ### Usage Examples
 
+To upload one file :
 ```js
 grunt.initConfig({
     oneskyImport: {
@@ -86,6 +98,22 @@ grunt.initConfig({
         }
     },
 });
+```
+
+To upload several file :
+```js
+grunt.initConfig({
+    options: {
+        authFile: 'onesky.json',
+        projectId: '12345',
+        isKeepingAllStrings: false
+    },
+    import: {
+        files: [{ProjectId : '1234', locale : 'fr-FR', file : 'fr.json'},
+        {ProjectId : '1234', locale : 'en-GB', file : 'en.json'}]
+    }
+})
+
 ```
 
 ## Contributing
