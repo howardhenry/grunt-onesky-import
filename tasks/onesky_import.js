@@ -25,21 +25,20 @@ module.exports = function (grunt) {
             projectId: '',
             locale: '',
             file: '',
-            files: [],
+            files: [], // [{projectId:String, locale:String, file:String}, {...}]
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
 
-        if (!!options.files.lenght){
-            options.files.push({projectId : options.projectId, locale : options.locale, file : options.file})
+        if (!!options.files.lenght) {
+            options.files.push({projectId: options.projectId, locale: options.locale, file: options.file});
         }
 
         uploadFiles = options.files.map(function(element) {
-             return upload(element);
+            return upload(element);
         });
-        
+
         Promise.all(uploadFiles).then(function() {
-            console.log('Files uploaded on onesky');
             done();
         });
 
@@ -48,7 +47,9 @@ module.exports = function (grunt) {
         function upload(element) {
             var api = getApi(element.projectId);
             var url = api.baseUrl + api.path;
+
             var _promise = new Promise(function(resolve, reject) {
+
                 var form = new FormData();
                 form.append('api_key', api.publicKey);
                 form.append('timestamp', api.timestamp);
@@ -56,67 +57,51 @@ module.exports = function (grunt) {
                 form.append('file', fs.createReadStream(element.file));
                 form.append('file_format', options.fileFormat);
                 form.append('locale', element.locale);
-
                 if (_.isBoolean(options.isKeepingAllStrings)) {
                     form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
                 } else {
                     grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
                 }
-
                 form.submit(url, onUpload);
-            }
 
-            function onUpload(error, response) {
-                if (error) { throw error; }
-
-                var promise = new Promise(function(resolve, reject) {
+                function onUpload(error, response) {
+                    if (error) { throw error; }
                     response.on('data', function (data) {
                         data = JSON.parse(data);
-
                         if (response.statusCode === 201) {
                             onUploadSuccess(data);
                         } else {
                             onUploadError(data);
                         }
-                    }) 
-                });
-                response.resume();
-            }
-
-            function onUploadSuccess(data) {
-                var importId;
-                var locale;
-                var region;
-
-                if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
-                if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
-                if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
-                grunt.log.ok('File: "' + options.file +
-                    '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
-                resolve();    
-            }
-
-            function onUploadError(data) {
-                var errorMsg;
-                var statusCode;
-
-                if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
-                if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
-                grunt.fail.warn(statusCode + ': ' + errorMsg)
-                reject();
-            }
-
+                    });
+                    response.resume();
+                }
+                function onUploadSuccess(data) {
+                    var importId;
+                    var locale;
+                    var region;
+                    if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
+                    if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
+                    if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
+                    grunt.log.ok('File: "' + options.file +
+                        '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
+                    resolve();
+                }
+                function onUploadError(data) {
+                    var errorMsg;
+                    var statusCode;
+                    if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
+                    if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
+                    grunt.fail.warn(statusCode + ': ' + errorMsg);
+                    reject();
+                }
             });
-
             return _promise;
         }
-
         function getApi(projectId) {
             var oneSkyKeys = grunt.file.readJSON(options.authFile);
-
             var timestamp = Math.floor(Date.now() / 1000);
             var devHash = crypto.createHash('md5').update(timestamp + oneSkyKeys.secretKey).digest('hex');
-
             return {
                 baseUrl: apiRoot,
                 path: 'projects/' + projectId + '/files',
