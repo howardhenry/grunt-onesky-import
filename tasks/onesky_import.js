@@ -25,7 +25,7 @@ module.exports = function (grunt) {
             projectId: '',
             locale: '',
             file: '',
-            files: [], // [{projectId:String, locale:String, file:String}, {...}]
+            files: [],
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
