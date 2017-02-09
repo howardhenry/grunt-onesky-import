@@ -1,6 +1,6 @@
 # grunt-onesky-import
 
-> Import translation files into your OneSky project
+> Import a single or multiple translation files into your OneSky project
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
@@ -51,6 +51,25 @@ Type: `String`
 
 The path to the translation file to be upload to your OneSky project.
 
+NOTE: In each task definition, use either the `files` OR `file` property, not both.
+
+#### options.files
+Type: `String OR array of strings/globbing patterns`
+
+```
+'src/locales/**/*.json'
+
+OR
+
+[
+    'src/locales/**/*.json',
+    '!src/translations/**/*.json',
+    ...
+]
+```
+
+NOTE: In each task definition, use either the `files` OR `file` property, not both.
+
 #### options.locale
 Type: `String` Default value: Your project main language
 
@@ -69,6 +88,7 @@ When uploading a file which overwrites an existing file in your OneSky project, 
 
 ### Usage Examples
 
+Upload a single file in one task:
 ```js
 grunt.initConfig({
     oneskyImport: {
@@ -85,6 +105,42 @@ grunt.initConfig({
             }
         }
     },
+});
+```
+
+Upload multiple files in one task:
+```js
+grunt.initConfig({
+    options: {
+        authFile: 'onesky.json',
+        projectId: '12345',
+        isKeepingAllStrings: false
+    },
+    import: {
+        options: {
+            // Globbing pattern string
+            files: 'src/locales/**/*.json'
+        }
+    }
+});
+
+OR
+
+grunt.initConfig({
+    options: {
+        authFile: 'onesky.json',
+        projectId: '12345',
+        isKeepingAllStrings: false
+    },
+    import: {
+        options: {
+            files: [
+                // Array of globbing patterns or array of file paths
+                'src/locales/**/*.json',
+                '!src/translations/**/*.json'
+            }
+        }
+    }
 });
 ```
 

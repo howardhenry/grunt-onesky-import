@@ -8,87 +8,119 @@
 
 var crypto = require('crypto');
 var fs = require('fs');
-var _ = require('lodash');
 var FormData = require('form-data');
+var Bluebird = require('bluebird');
+var _ = require('lodash');
 
-var apiRoot = 'https://platform.api.onesky.io/1/';
+var BASE_URL = 'https://platform.api.onesky.io/1/';
 
 module.exports = function (grunt) {
     grunt.registerMultiTask('oneskyImport', 'Import translation files into your OneSky project', function () {
-
         var done = this.async();
-
         var options = this.options({
             authFile: 'onesky.json',
             projectId: '',
             locale: '',
             file: '',
+            files: [],
             fileFormat: 'HIERARCHICAL_JSON',
             isKeepingAllStrings: true
         });
+        var hasSingleFile = !!options.file;
+        var hasMultipleFiles = _.isArray(options.files) && options.files.length;
+        var uploadQueue = [];
 
-        return upload();
+        if (hasSingleFile && hasMultipleFiles) {
+            grunt.fail.fatal('Import task may contain only "options.file" OR "options.files", not both.');
+        } else if (!hasSingleFile && !hasMultipleFiles) {
+            grunt.fail.fatal('Import task must specify at least one file to upload');
+        } else if (hasSingleFile) {
+            uploadQueue.push(upload(options.file));
+        } else if (hasMultipleFiles) {
+            grunt.file
+                .expand({}, options.files)
+                .forEach(function (file) {
+                    uploadQueue.push(upload(file));
+                });
+        }
+
+        Bluebird.all(uploadQueue)
+            .finally(function () {
+                done();
+            });
 
         ///////////////////////////
 
-        function upload() {
-            var api = getApi();
-            var url = api.baseUrl + api.path;
+        function upload(file) {
+            return new Bluebird(function (resolve, reject) {
+                var api = getApi();
+                var url = api.baseUrl + api.path;
 
-            var form = new FormData();
-            form.append('api_key', api.publicKey);
-            form.append('timestamp', api.timestamp);
-            form.append('dev_hash', api.devHash);
-            form.append('file', fs.createReadStream(options.file));
-            form.append('file_format', options.fileFormat);
-            form.append('locale', options.locale);
+                var form = new FormData();
+                form.append('api_key', api.publicKey);
+                form.append('timestamp', api.timestamp);
+                form.append('dev_hash', api.devHash);
+                form.append('file', fs.createReadStream(file));
+                form.append('file_format', options.fileFormat);
+                form.append('locale', options.locale);
 
-            if (_.isBoolean(options.isKeepingAllStrings)) {
-                form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
-            } else {
-                grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
-            }
+                if (_.isBoolean(options.isKeepingAllStrings)) {
+                    form.append('is_keeping_all_strings', options.isKeepingAllStrings.toString());
+                } else {
+                    grunt.fail.warn('Expected "options.isKeepingAllStrings" to be a boolean');
+                }
 
-            form.submit(url, onUpload);
+                form.submit(url, onUpload);
 
-            function onUpload(error, response) {
-                if (error) { throw error; }
+                function onUpload(error, response) {
+                    if (error) { throw error; }
 
-                response.on('data', function (data) {
-                    data = JSON.parse(data);
+                    response.on('data', function (data) {
+                        data = JSON.parse(data);
 
-                    if (response.statusCode === 201) {
-                        onUploadSuccess(data);
-                    } else {
-                        onUploadError(data);
+                        if (response.statusCode === 201) {
+                            onUploadSuccess(data);
+                        } else {
+                            onUploadError(data);
+                        }
+                    });
+
+                    response.resume();
+                }
+
+                function onUploadSuccess(data) {
+                    var message = 'Success: ' + file + '.';
+
+                    if (_.get(data, 'data.import.id')) {
+                        message += ' Import ID: ' + data.data.import.id + '.';
                     }
-                });
+                    if (_.get(data, 'data.language.locale')) {
+                        message += ' Locale: ' + data.data.language.locale + '.';
+                    }
+                    if (_.get(data, 'data.language.region')) {
+                        message += ' Region: ' + data.data.language.region + '.';
+                    }
 
-                response.resume();
-                done();
-            }
+                    grunt.log.ok(message);
 
-            function onUploadSuccess(data) {
-                var importId;
-                var locale;
-                var region;
+                    resolve();
+                }
 
-                if (_.has(data, 'data.import.id')) { importId = data.data.import.id; }
-                if (_.has(data, 'data.language.locale')) { locale = data.data.language.locale; }
-                if (_.has(data, 'data.language.region')) { region = data.data.language.region; }
-                grunt.log.ok('File: "' + options.file +
-                    '" uploaded. Import ID: ' + importId + '. Locale: ' + locale + ' Region: ' + region);
-            }
+                function onUploadError(data) {
+                    var message = 'Error: ' + file + '.';
 
-            function onUploadError(data) {
-                var errorMsg;
-                var statusCode;
+                    if (_.get(data, 'meta.status')) {
+                        message += ' Status: ' + data.meta.status + '.';
+                    }
+                    if (_.get(data, 'meta.message')) {
+                        message += ' Details: ' + data.meta.message + '.';
+                    }
 
-                if (_.has(data, 'meta.status')) { statusCode = data.meta.status; }
-                if (_.has(data, 'meta.message')) { errorMsg = data.meta.message; }
+                    grunt.fail.warn(message);
 
-                grunt.fail.warn(statusCode + ': ' + errorMsg);
-            }
+                    reject();
+                }
+            });
         }
 
         function getApi() {
@@ -98,7 +130,7 @@ module.exports = function (grunt) {
             var devHash = crypto.createHash('md5').update(timestamp + oneSkyKeys.secretKey).digest('hex');
 
             return {
-                baseUrl: apiRoot,
+                baseUrl: BASE_URL,
                 path: 'projects/' + options.projectId + '/files',
                 publicKey: oneSkyKeys.publicKey,
                 timestamp: timestamp,

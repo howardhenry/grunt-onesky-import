@@ -41,7 +41,8 @@
     "gruntplugin"
   ],
   "dependencies": {
+    "bluebird": "^3.4.7",
     "form-data": "^1.0.0-rc1",
-    "lodash": "^3.9.3"
+    "lodash": "^4.17.4"
   }
 }
